@@ -59,8 +59,13 @@ app.use(async (req, res, next) => {
   const isAccessTokenValid = await twitch.isAccessTokenValid();
 
   if (!isAccessTokenValid) {
-    // Attempt to refresh token - TODO
-    return res.redirect('/login');
+    try {
+      // Attempt to refresh access token
+      await twitch.refreshAccessToken();
+    } catch (error) {
+      console.error(error.message);
+      return res.redirect('/login');
+    }
   }
 
   next();

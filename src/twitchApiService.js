@@ -75,6 +75,36 @@ class TwitchApi {
     });
   }
 
+  async refreshAccessToken() {
+    const url = `${this.authUrl}/token`;
+    const clientId = `client_id=${this.clientId}`;
+    const clientSecret = `client_secret=${this.clientSecret}`;
+    const refreshToken = `refresh_token=${encodeURIComponent(this.refreshToken)}`;
+    const grantType = 'grant_type=refresh_token';
+
+    const req = await fetch(`${url}?${clientId}&${clientSecret}&${refreshToken}&${grantType}`, {
+      method: 'POST',
+    });
+
+    const resp = await req.json();
+
+    if (!resp['access_token']) {
+      throw new Error('Failed to refresh access token');
+    }
+
+    // Update access token
+    this.accessToken = resp['access_token'];
+    this.refreshToken = resp['refresh_token'];
+    
+    // Save tokens
+    this.saveTokens({
+      accessToken: this.accessToken,
+      refreshToken: this.refreshToken,
+    });
+
+    console.log('Refreshed access token:', this.accessToken);
+  }
+
   async isAccessTokenValid() {
     const req = await fetch(`${this.authUrl}/validate`, {
       headers: {
