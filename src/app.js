@@ -25,13 +25,6 @@ app.get('/twitchCallback', async (req, res) => {
   if (req.query.code) {
     // Get access and refresh tokens
     await twitch.getTokens(req.query.code);
-
-    // Save tokens
-    fs.writeFileSync('tokens.json', JSON.stringify({
-      accessToken: twitch.accessToken,
-      refreshToken: twitch.refreshToken,
-    }));
-
     res.redirect('/home');
   } else {
     res.status(500).send('Could not connect');
