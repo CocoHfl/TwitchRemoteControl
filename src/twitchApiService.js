@@ -45,7 +45,8 @@ class TwitchApi {
     const responseType = 'response_type=code';
     const clientId = `client_id=${this.clientId}`;
     const redirectUri = `redirect_uri=http://localhost:3002/twitchCallback`;
-    const scopes = 'scope=user%3Aread%3Afollows+user%3Awrite%3Achat';
+    const scopesArray = ['user:read:follows', 'user:write:chat'];
+    const scopes = `scope=${scopesArray.map(encodeURIComponent).join('+')}`;
 
     return `${url}?${responseType}&${clientId}&${redirectUri}&${scopes}`;
   }
