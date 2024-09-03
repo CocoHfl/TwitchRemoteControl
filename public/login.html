@@ -1,0 +1,39 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Twitch Remote Control</title>
+  <link rel="stylesheet" href="styles/global.css" type="text/css">
+</head>
+
+<style>
+  button {
+    font-family: inherit;
+    font-size: 20px;
+    background-color: #6441a5;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+</style>
+
+<body>
+  <div id="root">
+    <div class="content">
+      <h1>Twitch Remote Control</h1>
+      <button onclick="window.location.href = '/twitchConnect'">Connect with Twitch</button>
+    </div>
+  </div>
+</body>
+
+</html>
