@@ -8,40 +8,40 @@ class StreamPlayer {
   }
 
   async launchBrowser() {
-    if (!this.puppeteerBrowser) {
+    if (!this.puppeteerBrowser || !this.puppeteerBrowser.connected) {
       this.puppeteerBrowser = await puppeteer.launch({ 
         headless: false, 
         defaultViewport: null, 
         args: ['--start-maximized'] 
       });
-    }
-  }
 
-  async createPage() {
-    if (!this.puppeteerPage) {
-      this.puppeteerPage = await this.puppeteerBrowser.newPage();
+      const pages = await this.puppeteerBrowser.pages();
+      this.puppeteerPage = pages[0];
     }
   }
 
   async watchStreamer(streamer) {
-    await this.launchBrowser();
-    await this.createPage();
-    await this.puppeteerPage.goto(`https://twitch.tv/${streamer}`);
+    try {
+      await this.launchBrowser();
+      await this.puppeteerPage.goto(`https://twitch.tv/${streamer}`);
 
-    const buttons = [
-      'content-classification-gate-overlay-start-watching-button', // Start watching button when warning is shown
-      'player-fullscreen-button', // Fullscreen button
-      'player-mute-unmute-button', // Mute/unmute button
-    ];
-
-    for (const button of buttons) {
-      const buttonElement = await this.puppeteerPage.$(`button[data-a-target='${button}']`);
-      if (buttonElement) {
-        await buttonElement.click();
+      const buttons = [
+        'content-classification-gate-overlay-start-watching-button', // Start watching button when warning is shown
+        'player-fullscreen-button', // Fullscreen button
+        'player-mute-unmute-button', // Mute/unmute button
+      ];
+  
+      for (const button of buttons) {
+        const buttonElement = await this.puppeteerPage.$(`button[data-a-target='${button}']`);
+        if (buttonElement) {
+          await buttonElement.click();
+        }
       }
+  
+      this.currentlyWatching = streamer;
+    } catch (error) {
+      console.error('Error watching streamer:', error.message);
     }
-
-    this.currentlyWatching = streamer;
   }
 }
 
