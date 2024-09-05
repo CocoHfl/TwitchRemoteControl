@@ -10,6 +10,8 @@ const player = new StreamPlayer();
 const app = express();
 const port = 3002;
 
+let client = null;
+
 app.use(express.static(path.join(__dirname, '../public')));
 
 app.get('/login', (req, res) => {
@@ -42,9 +44,28 @@ app.get('/api/followed-streams', async (req, res) => {
   }
 });
 
+app.get('/event', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  client = res;
+
+  req.on('close', () => {
+    client = null;
+  });
+});
+
 app.get('/api/watch/:streamer', async (req, res) => {
   const streamer = req.params.streamer;
   await player.watchStreamer(streamer);
+
+  player.puppeteerBrowser.on('disconnected', () => {
+    if (client) {
+      client.write(`data: ${JSON.stringify({ event: 'puppeteerDisconnected', message: `Puppeteer browser disconnected` })}\n\n`);
+    }
+  });
 
   res.json({ currentlyWatching: player.currentlyWatching });
 });

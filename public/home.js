@@ -1,3 +1,13 @@
+const eventSource = new EventSource('/event');
+const currentlyWatchingEle = document.getElementById('currently-watching');
+
+eventSource.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  if (data.event === 'puppeteerDisconnected') {
+    currentlyWatchingEle.textContent = '';
+  }
+};
+
 async function watchStreamer(streamer) {
   try {
     const request = await fetch(`/api/watch/${streamer}`);
@@ -5,7 +15,6 @@ async function watchStreamer(streamer) {
     const currentlyWatching = data?.currentlyWatching;
 
     if (currentlyWatching) {
-      const currentlyWatchingEle = document.getElementById('currently-watching');
       currentlyWatchingEle.textContent = `Currently watching: ${currentlyWatching}`;
     }
   } catch (error) {
