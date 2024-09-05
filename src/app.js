@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const TwitchApi = require('./twitchApiService');
+const TwitchApi = require('./twitchApi');
 const StreamPlayer = require('./streamPlayer');
 
 const twitch = new TwitchApi();
