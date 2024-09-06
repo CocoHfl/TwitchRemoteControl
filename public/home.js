@@ -82,6 +82,9 @@ async function fetchStreams() {
 }
 
 async function sendChatMessage(message) {
+  document.getElementById('send-message-button').disabled = true;
+  document.getElementById('send-message-button').textContent = 'Sending...';
+  
   try {
     await fetch('/api/sendChatMessage', {
       method: 'POST',
@@ -94,6 +97,9 @@ async function sendChatMessage(message) {
   } catch (error) {
     console.error('Error sending chat message:', error);
   }
+
+  document.getElementById('send-message-button').disabled = false;
+  document.getElementById('send-message-button').textContent = 'Send message';
 }
 
 fetchStreams();
