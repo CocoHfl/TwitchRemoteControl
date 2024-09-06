@@ -101,8 +101,6 @@ class TwitchApi {
       accessToken: this.accessToken,
       refreshToken: this.refreshToken,
     });
-
-    console.log('Refreshed access token:', this.accessToken);
   }
 
   async isAccessTokenValid() {
@@ -137,7 +135,7 @@ class TwitchApi {
     }
   }
 
-  async GetLiveFollowedStreams(userId) {
+  async getLiveFollowedStreams(userId) {
     const url = `${this.apiUrl}/streams/followed?user_id=${userId}`;
 
     const req = await fetch(url, {

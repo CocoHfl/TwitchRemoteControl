@@ -54,7 +54,6 @@ h1 {
   display: block;
   width: 100%;
   text-align: center;
-  transition: background-color 0.3s;
 }
 
 #currently-watching {

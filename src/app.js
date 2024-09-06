@@ -1,6 +1,5 @@
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
 const bodyParser = require('body-parser');
 const TwitchApi = require('./twitchApi');
 const StreamPlayer = require('./streamPlayer');
@@ -38,7 +37,7 @@ app.get('/twitchCallback', async (req, res) => {
 
 app.get('/api/followed-streams', async (req, res) => {
   try {
-    const followedStreams = await twitch.GetLiveFollowedStreams(userId);
+    const followedStreams = await twitch.getLiveFollowedStreams(userId);
 
     res.json(followedStreams);
   } catch (error) {
@@ -89,8 +88,7 @@ app.post('/api/sendChatMessage', async (req, res) => {
   }
 });
 
-// Middleware to check if access token is valid
-// Will only apply to routes below this code
+// Middleware: check access token and get user info
 app.use(async (req, res, next) => {
   if (!twitch.accessToken) {
     return res.redirect('/login');
