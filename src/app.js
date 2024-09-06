@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const bodyParser = require('body-parser');
 const TwitchApi = require('./twitchApi');
 const StreamPlayer = require('./streamPlayer');
 
@@ -11,8 +12,10 @@ const app = express();
 const port = 3002;
 
 let client = null;
+let userId = null;
 
 app.use(express.static(path.join(__dirname, '../public')));
+app.use(bodyParser.json());
 
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/login.html'));
@@ -35,8 +38,7 @@ app.get('/twitchCallback', async (req, res) => {
 
 app.get('/api/followed-streams', async (req, res) => {
   try {
-    const userInfo = await twitch.getUserInfo();
-    const followedStreams = await twitch.GetLiveFollowedStreams(userInfo.userId);
+    const followedStreams = await twitch.GetLiveFollowedStreams(userId);
 
     res.json(followedStreams);
   } catch (error) {
@@ -70,6 +72,23 @@ app.get('/api/watch/:streamer', async (req, res) => {
   res.json({ currentlyWatching: player.currentlyWatching });
 });
 
+app.post('/api/sendChatMessage', async (req, res) => {
+  const message = req.body.message;
+
+  if (!message || !player.currentlyWatching) {
+    res.status(400).send(`${!message ? 'Missing message' : 'Not watching a stream'}`);
+    return;
+  } else {
+    try {
+      const broadcasterInfo = await twitch.getUserInfo(player.currentlyWatching);
+      await twitch.sendChatMessage(broadcasterInfo.userId, userId, message);
+      res.status(200).send('Chat message sent');
+    } catch (error) {
+      res.status(500).send('Coudn\'t send chat message');
+    }
+  }
+});
+
 // Middleware to check if access token is valid
 // Will only apply to routes below this code
 app.use(async (req, res, next) => {
@@ -88,6 +107,9 @@ app.use(async (req, res, next) => {
       return res.redirect('/login');
     }
   }
+
+  const userInfo = await twitch.getUserInfo();
+  userId = userInfo.userId;
 
   next();
 })

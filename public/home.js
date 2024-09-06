@@ -1,10 +1,12 @@
 const eventSource = new EventSource('/event');
-const currentlyWatchingEle = document.getElementById('currently-watching');
+const currentlyWatchingDiv = document.getElementById('currently-watching');
+const currentlyWatchingText = document.getElementById('currently-watching-text');
 
 eventSource.onmessage = (event) => {
   const data = JSON.parse(event.data);
   if (data.event === 'puppeteerDisconnected') {
-    currentlyWatchingEle.textContent = '';
+    currentlyWatchingDiv.setAttribute('style', 'display: none;');
+    currentlyWatchingText.textContent = '';
   }
 };
 
@@ -12,10 +14,11 @@ async function watchStreamer(streamer) {
   try {
     const request = await fetch(`/api/watch/${streamer}`);
     const data = await request.json();
-    const currentlyWatching = data?.currentlyWatching;
+    const streamerName = data?.currentlyWatching;
 
-    if (currentlyWatching) {
-      currentlyWatchingEle.textContent = `Currently watching: ${currentlyWatching}`;
+    if (streamerName) {
+      currentlyWatchingDiv.setAttribute('style', 'display: block;');
+      currentlyWatchingText.textContent = `Currently watching: ${streamerName}`;
     }
   } catch (error) {
     console.error('Error fetching currently watching:', error);
@@ -77,4 +80,20 @@ async function fetchStreams() {
     console.error('Error fetching streams:', error);
   }
 }
+
+async function sendChatMessage(message) {
+  try {
+    await fetch('/api/sendChatMessage', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message : message.value }),
+    });
+    message.value = '';
+  } catch (error) {
+    console.error('Error sending chat message:', error);
+  }
+}
+
 fetchStreams();

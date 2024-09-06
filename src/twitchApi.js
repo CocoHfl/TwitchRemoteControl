@@ -95,7 +95,7 @@ class TwitchApi {
     // Update access token
     this.accessToken = resp['access_token'];
     this.refreshToken = resp['refresh_token'];
-    
+
     // Save tokens
     this.saveTokens({
       accessToken: this.accessToken,
@@ -119,8 +119,8 @@ class TwitchApi {
     fs.writeFileSync('tokens.json', JSON.stringify(tokens), 'utf-8');
   }
 
-  async getUserInfo() {
-    const url = `${this.apiUrl}/users`;
+  async getUserInfo(login = null) {
+    const url = `${this.apiUrl}/users${login ? `?login=${login}` : ''}`;
 
     let req = await fetch(url, {
       headers: {
@@ -130,7 +130,7 @@ class TwitchApi {
     });
 
     let resp = await req.json();
-    
+
     return {
       userId: resp?.data[0]?.id,
       displayName: resp?.data[0]?.display_name
@@ -148,6 +148,25 @@ class TwitchApi {
     });
 
     return req.json();
+  }
+
+  async sendChatMessage(broadcasterId, senderId, message) {
+    const url = `${this.apiUrl}/chat/messages`;
+    const body = JSON.stringify({
+      'broadcaster_id': broadcasterId,
+      'sender_id': senderId,
+      'message': message
+    });
+
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.accessToken}`,
+        'Client-ID': this.clientId,
+        'Content-Type': 'application/json'
+      },
+      body
+    });
   }
 }
 

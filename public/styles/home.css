@@ -12,12 +12,6 @@ h1 {
   font-size: 3em;
 }
 
-#currently-watching {
-  font-size: 1.5em;
-  margin-bottom: 20px;
-  color: #f1f1f1;
-}
-
 #streams {
   display: flex;
   flex-direction: column;
@@ -61,4 +55,46 @@ h1 {
   width: 100%;
   text-align: center;
   transition: background-color 0.3s;
+}
+
+#currently-watching {
+  display: none;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+#currently-watching-text {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #f1f1f1;
+}
+
+#send-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#message-input {
+  padding: 15px;
+  border-radius: 4px;
+  border: 1px solid #b9a3e3;
+  width: 100%;
+  margin-bottom: 10px;
+  background-color: #262626;
+  color: #f1f1f1;
+  font-size: 1.75em;
+}
+
+#send-message-button {
+  padding: 15px 25px;
+  border: none;
+  border-radius: 4px;
+  background-color: #6441a5;
+  color: #f1f1f1;
+  font-size: 1.75em;
+  cursor: pointer;
+  width: 100%;
 }
