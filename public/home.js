@@ -2,24 +2,32 @@ const eventSource = new EventSource('/event');
 const currentlyWatchingDiv = document.getElementById('currently-watching');
 const currentlyWatchingText = document.getElementById('currently-watching-text');
 
+eventSource.onopen = () => {
+  // Check if there is any active stream activity
+  fetch('/streamActivity', { method: 'POST' });
+};
+
 eventSource.onmessage = (event) => {
   const data = JSON.parse(event.data);
-  if (data.event === 'puppeteerDisconnected') {
-    currentlyWatchingDiv.setAttribute('style', 'display: none;');
-    currentlyWatchingText.textContent = '';
+
+  switch (data.event) {
+    // If the stream has started or a client has joined while a stream is active
+    case 'startedWatching':
+    case 'userJoinedActiveStream':
+      currentlyWatchingDiv.setAttribute('style', 'display: block;');
+      currentlyWatchingText.textContent = `Currently watching: ${data.streamer}`;
+      break;
+
+    case 'puppeteerDisconnected':
+      currentlyWatchingDiv.setAttribute('style', 'display: none;');
+      currentlyWatchingText.textContent = '';
+      break;
   }
 };
 
 async function watchStreamer(streamer) {
   try {
-    const request = await fetch(`/api/watch/${streamer}`);
-    const data = await request.json();
-    const streamerName = data?.currentlyWatching;
-
-    if (streamerName) {
-      currentlyWatchingDiv.setAttribute('style', 'display: block;');
-      currentlyWatchingText.textContent = `Currently watching: ${streamerName}`;
-    }
+    await fetch(`/api/watch/${streamer}`);
   } catch (error) {
     console.error('Error fetching currently watching:', error);
   }

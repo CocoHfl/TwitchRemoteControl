@@ -10,7 +10,7 @@ const player = new StreamPlayer();
 const app = express();
 const port = 3002;
 
-let client = null;
+let clients = [];
 let userId = null;
 
 app.use(express.static(path.join(__dirname, '../public')));
@@ -51,10 +51,10 @@ app.get('/event', (req, res) => {
   res.setHeader('Connection', 'keep-alive');
   res.flushHeaders();
 
-  client = res;
+  clients.push(res);
 
   req.on('close', () => {
-    client = null;
+    clients = clients.filter(client => client !== res);
   });
 });
 
@@ -62,9 +62,18 @@ app.get('/api/watch/:streamer', async (req, res) => {
   const streamer = req.params.streamer;
   await player.watchStreamer(streamer);
 
+  if (clients.length > 0) {
+    clients.forEach(client => {
+      client.write(`data: ${JSON.stringify({ event: 'startedWatching', streamer: streamer })}\n\n`);
+    });
+  }
+
   player.puppeteerBrowser.on('disconnected', () => {
-    if (client) {
-      client.write(`data: ${JSON.stringify({ event: 'puppeteerDisconnected', message: `Puppeteer browser disconnected` })}\n\n`);
+    if (clients.length > 0) {
+      clients.forEach(client => {
+        player.currentlyWatching = null;
+        client.write(`data: ${JSON.stringify({ event: 'puppeteerDisconnected', message: `Puppeteer browser disconnected` })}\n\n`);
+      });
     }
   });
 
@@ -87,6 +96,16 @@ app.post('/api/sendChatMessage', async (req, res) => {
     }
   }
 });
+
+// Check for active stream activity
+app.post('/streamActivity', (req, res) => {
+  if (player.currentlyWatching && clients.length > 0) {
+    // Send SSE event to latest client
+    clients[clients.length - 1].write(`data: ${JSON.stringify({ event: 'userJoinedActiveStream', streamer: player.currentlyWatching })}\n\n`);
+  }
+
+  res.status(200);
+})
 
 // Middleware: check access token and get user info
 app.use(async (req, res, next) => {
