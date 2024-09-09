@@ -3,6 +3,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const TwitchApi = require('./twitchApi');
 const StreamPlayer = require('./streamPlayer');
+const tmi = require('tmi.js');
 
 const twitch = new TwitchApi();
 const player = new StreamPlayer();
@@ -11,7 +12,8 @@ const app = express();
 const port = 3002;
 
 let clients = [];
-let userId = null;
+let userInfo = { userId: null, displayName: null };
+let tmiClient = null;
 
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(bodyParser.json());
@@ -37,7 +39,7 @@ app.get('/twitchCallback', async (req, res) => {
 
 app.get('/api/followed-streams', async (req, res) => {
   try {
-    const followedStreams = await twitch.getLiveFollowedStreams(userId);
+    const followedStreams = await twitch.getLiveFollowedStreams(userInfo.userId);
 
     res.json(followedStreams);
   } catch (error) {
@@ -68,6 +70,8 @@ app.get('/api/watch/:streamer', async (req, res) => {
     });
   }
 
+  initializeTmiClient();
+
   player.puppeteerBrowser.on('disconnected', () => {
     if (clients.length > 0) {
       clients.forEach(client => {
@@ -75,10 +79,44 @@ app.get('/api/watch/:streamer', async (req, res) => {
         client.write(`data: ${JSON.stringify({ event: 'puppeteerDisconnected', message: `Puppeteer browser disconnected` })}\n\n`);
       });
     }
+
+    if (tmiClient?.readyState() === 'OPEN') {
+      tmiClient.disconnect().catch(console.error);
+    }
   });
 
   res.json({ currentlyWatching: player.currentlyWatching });
 });
+
+function initializeTmiClient() {
+  if (tmiClient?.readyState() === 'OPEN') {
+    tmiClient.disconnect().catch(console.error);
+  }
+
+  tmiClient = new tmi.Client({
+    channels: [player.currentlyWatching],
+    identity: {
+      username: userInfo.displayName,
+      password: `oauth:${twitch.accessToken}`
+    }
+  });
+
+  tmiClient.connect().catch(console.error);
+
+  tmiClient.on('message', (channel, tags, message, self) => {
+    if (self) return;
+
+    const msg = JSON.stringify({
+      event: 'chatMessage',
+      username: tags['display-name'],
+      message: message
+    });
+
+    clients.forEach(client => {
+      client.write(`data: ${msg}\n\n`);
+    });
+  });
+}
 
 app.post('/api/sendChatMessage', async (req, res) => {
   const message = req.body.message;
@@ -89,7 +127,7 @@ app.post('/api/sendChatMessage', async (req, res) => {
   } else {
     try {
       const broadcasterInfo = await twitch.getUserInfo(player.currentlyWatching);
-      await twitch.sendChatMessage(broadcasterInfo.userId, userId, message);
+      await twitch.sendChatMessage(broadcasterInfo.userId, userInfo.userId, message);
       res.status(200).send('Chat message sent');
     } catch (error) {
       res.status(500).send('Coudn\'t send chat message');
@@ -125,8 +163,9 @@ app.use(async (req, res, next) => {
     }
   }
 
-  const userInfo = await twitch.getUserInfo();
-  userId = userInfo.userId;
+  const user = await twitch.getUserInfo();
+  userInfo.userId = user.userId;
+  userInfo.displayName = user.displayName;
 
   next();
 })

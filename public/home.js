@@ -1,6 +1,8 @@
 const eventSource = new EventSource('/event');
 const currentlyWatchingDiv = document.getElementById('currently-watching');
 const currentlyWatchingText = document.getElementById('currently-watching-text');
+const chatDiv = document.getElementById('chat');
+const maxChatMessages = 20;
 
 eventSource.onopen = () => {
   // Check if there is any active stream activity
@@ -11,19 +13,51 @@ eventSource.onmessage = (event) => {
   const data = JSON.parse(event.data);
 
   switch (data.event) {
-    // If the stream has started or a client has joined while a stream is active
+    // If the stream has started
     case 'startedWatching':
+      clearChat();
+      showCurrentlyWatching(data.streamer);
+      currentlyWatchingDiv.scrollIntoView({ behavior: 'smooth' });
+      break;
+    // If a client has joined while a stream is active
     case 'userJoinedActiveStream':
-      currentlyWatchingDiv.setAttribute('style', 'display: block;');
-      currentlyWatchingText.textContent = `Currently watching: ${data.streamer}`;
+      showCurrentlyWatching(data.streamer);
       break;
 
     case 'puppeteerDisconnected':
       currentlyWatchingDiv.setAttribute('style', 'display: none;');
       currentlyWatchingText.textContent = '';
       break;
+
+    case 'chatMessage':
+      const messageElement = document.createElement('p');
+      messageElement.setAttribute('class', 'chat-message');
+      
+      const usernameSpan = document.createElement('span');
+      usernameSpan.textContent = `${data.username}: `;
+      usernameSpan.style.fontWeight = 'bold';
+      
+      messageElement.appendChild(usernameSpan);
+      messageElement.appendChild(document.createTextNode(data.message));
+      chatDiv.appendChild(messageElement);
+
+      if (chatDiv.childElementCount > maxChatMessages) {
+        chatDiv.removeChild(chatDiv.firstChild);
+      }
+
+      chatDiv.scrollTop = chatDiv.scrollHeight;
+      break;
   }
 };
+
+function showCurrentlyWatching(streamer) {
+  currentlyWatchingDiv.setAttribute('style', 'display: block;');
+  currentlyWatchingText.textContent = `Currently watching: ${streamer}`;
+}
+
+function clearChat() {
+  chatDiv.textContent = '';
+}
 
 async function watchStreamer(streamer) {
   try {
@@ -54,7 +88,7 @@ async function fetchStreams() {
       const name = document.createElement('h3');
       name.textContent = `${stream.user_name}`;
       streamCard.appendChild(name);
-      
+
       // Stream Title
       const title = document.createElement('p');
       title.classList.add('stream-title');
@@ -92,14 +126,14 @@ async function fetchStreams() {
 async function sendChatMessage(message) {
   document.getElementById('send-message-button').disabled = true;
   document.getElementById('send-message-button').textContent = 'Sending...';
-  
+
   try {
     await fetch('/api/sendChatMessage', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ message : message.value }),
+      body: JSON.stringify({ message: message.value }),
     });
     message.value = '';
   } catch (error) {
