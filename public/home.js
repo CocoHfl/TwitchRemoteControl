@@ -2,6 +2,8 @@ const eventSource = new EventSource('/event');
 const currentlyWatchingDiv = document.getElementById('currently-watching');
 const currentlyWatchingText = document.getElementById('currently-watching-text');
 const chatDiv = document.getElementById('chat');
+const sendButton = document.getElementById('send-message-button')
+const message = document.getElementById('message-input');
 const maxChatMessages = 20;
 
 eventSource.onopen = () => {
@@ -131,9 +133,11 @@ async function fetchStreams() {
   }
 }
 
-async function sendChatMessage(message) {
-  document.getElementById('send-message-button').disabled = true;
-  document.getElementById('send-message-button').textContent = 'Sending...';
+async function sendChatMessage() {
+  const sendButtonContent = sendButton.textContent;
+
+  sendButton.disabled = true;
+  sendButton.textContent = 'Sending...';
 
   try {
     await fetch('/api/sendChatMessage', {
@@ -148,8 +152,8 @@ async function sendChatMessage(message) {
     console.error('Error sending chat message:', error);
   }
 
-  document.getElementById('send-message-button').disabled = false;
-  document.getElementById('send-message-button').textContent = 'Send message';
+  sendButton.disabled = false;
+  sendButton.textContent = sendButtonContent;
 }
 
 fetchStreams();
