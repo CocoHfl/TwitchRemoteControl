@@ -97,7 +97,7 @@ h1 {
   width: 100%;
 }
 
-#send-message-button:disabled {
+#send-message-button:disabled, .watch-button:disabled {
   background: #404040;
 }
 

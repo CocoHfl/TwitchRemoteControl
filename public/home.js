@@ -59,12 +59,20 @@ function clearChat() {
   chatDiv.textContent = '';
 }
 
-async function watchStreamer(streamer) {
+async function watchStreamer(watchButton, streamer) {
+  const watchButtonContent = watchButton.textContent;
+  
+  watchButton.disabled = true;
+  watchButton.textContent = 'Loading...';
+
   try {
     await fetch(`/api/watch/${streamer}`);
   } catch (error) {
     console.error('Error fetching currently watching:', error);
   }
+
+  watchButton.disabled = false;
+  watchButton.textContent = watchButtonContent;
 }
 
 async function fetchStreams() {
@@ -111,8 +119,8 @@ async function fetchStreams() {
       const button = document.createElement('button');
       button.classList.add('watch-button');
       button.textContent = 'Watch';
-      button.addEventListener('click', () => {
-        watchStreamer(stream.user_name);
+      button.addEventListener('click', (e) => {
+        watchStreamer(e.target, stream.user_name);
       });
       streamCard.appendChild(button);
 
