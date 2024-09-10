@@ -9,7 +9,7 @@ h1 {
   text-align: center;
   color: #b9a3e3;
   margin-bottom: 20px;
-  font-size: 3em;
+  font-size: 2.25rem;
 }
 
 #streams {
@@ -31,14 +31,14 @@ h1 {
 }
 
 .stream-card h3 {
-  font-size: 2em;
+  font-size: 1.5rem;
   color: #b9a3e3;
   margin: 10px 0;
 }
 
 .game-name, .stream-title, .viewer-count {
   margin: 10px 0;
-  font-size: 1.5em;
+  font-size: 1.125rem;
   color: #f1f1f1;
 }
 
@@ -48,7 +48,7 @@ h1 {
   border: none;
   border-radius: 4px;
   padding: 15px;
-  font-size: 1.75em;
+  font-size: 1.25rem;
   cursor: pointer;
   margin-top: 15px;
   display: block;
@@ -64,7 +64,7 @@ h1 {
 }
 
 #currently-watching-text {
-  font-size: 1.5em;
+  font-size: 1.125rem;
   font-weight: bold;
   color: #f1f1f1;
   text-align: center;
@@ -83,7 +83,7 @@ h1 {
   margin-bottom: 10px;
   background-color: #262626;
   color: #f1f1f1;
-  font-size: 1.75em;
+  font-size: 1.25rem;
 }
 
 #send-message-button {
@@ -92,7 +92,7 @@ h1 {
   border-radius: 4px;
   background-color: #6441a5;
   color: #f1f1f1;
-  font-size: 1.75em;
+  font-size: 1.25rem;
   cursor: pointer;
   width: 100%;
 }
