@@ -45,7 +45,7 @@ class TwitchApi {
     const responseType = 'response_type=code';
     const clientId = `client_id=${this.clientId}`;
     const redirectUri = `redirect_uri=http://localhost:3002/twitchCallback`;
-    const scopesArray = ['user:read:follows', 'chat:read', 'user:write:chat'];
+    const scopesArray = ['user:read:follows', 'chat:read', 'chat:edit'];
     const scopes = `scope=${scopesArray.map(encodeURIComponent).join('+')}`;
 
     return `${url}?${responseType}&${clientId}&${redirectUri}&${scopes}`;
@@ -146,25 +146,6 @@ class TwitchApi {
     });
 
     return req.json();
-  }
-
-  async sendChatMessage(broadcasterId, senderId, message) {
-    const url = `${this.apiUrl}/chat/messages`;
-    const body = JSON.stringify({
-      'broadcaster_id': broadcasterId,
-      'sender_id': senderId,
-      'message': message
-    });
-
-    await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.accessToken}`,
-        'Client-ID': this.clientId,
-        'Content-Type': 'application/json'
-      },
-      body
-    });
   }
 }
 

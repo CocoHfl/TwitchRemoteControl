@@ -104,8 +104,6 @@ function initializeTmiClient() {
   tmiClient.connect().catch(console.error);
 
   tmiClient.on('message', (channel, tags, message, self) => {
-    if (self) return;
-
     const msg = JSON.stringify({
       event: 'chatMessage',
       username: tags['display-name'],
@@ -124,14 +122,14 @@ app.post('/api/sendChatMessage', async (req, res) => {
   if (!message || !player.currentlyWatching) {
     res.status(400).send(`${!message ? 'Missing message' : 'Not watching a stream'}`);
     return;
-  } else {
-    try {
-      const broadcasterInfo = await twitch.getUserInfo(player.currentlyWatching);
-      await twitch.sendChatMessage(broadcasterInfo.userId, userInfo.userId, message);
-      res.status(200).send('Chat message sent');
-    } catch (error) {
-      res.status(500).send('Coudn\'t send chat message');
-    }
+  }
+
+  try {
+    await tmiClient.say(player.currentlyWatching, message);
+    res.status(200).send('Chat message sent');
+  } catch (error) {
+    console.error('Error sending message:', error);
+    res.status(500).send('Failed to send chat message');
   }
 });
 
