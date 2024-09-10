@@ -28,13 +28,22 @@ class StreamPlayer {
       const buttons = [
         'content-classification-gate-overlay-start-watching-button', // Start watching button when warning is shown
         'player-fullscreen-button', // Fullscreen button
-        'player-mute-unmute-button', // Mute/unmute button
       ];
   
       for (const button of buttons) {
         const buttonElement = await this.puppeteerPage.$(`button[data-a-target='${button}']`);
         if (buttonElement) {
           await buttonElement.click();
+        }
+      }
+
+      const volumeSlider = await this.puppeteerPage.$(`input[data-a-target='player-volume-slider']`);
+      const muted = await volumeSlider?.evaluate(el => el.value) == 0;
+      
+      if(muted) {
+        const unmuteButton = await this.puppeteerPage.$(`button[data-a-target='player-mute-unmute-button']`);
+        if(unmuteButton) {
+          await unmuteButton.click(); 
         }
       }
   
