@@ -107,6 +107,7 @@ function initializeTmiClient() {
     const msg = JSON.stringify({
       event: 'chatMessage',
       username: tags['display-name'],
+      usernameColor: tags['color'],
       message: message
     });
 

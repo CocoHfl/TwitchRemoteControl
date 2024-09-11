@@ -38,6 +38,7 @@ eventSource.onmessage = (event) => {
       const usernameSpan = document.createElement('span');
       usernameSpan.textContent = `${data.username}: `;
       usernameSpan.style.fontWeight = 'bold';
+      usernameSpan.style.color = data.usernameColor;
       
       messageElement.appendChild(usernameSpan);
       messageElement.appendChild(document.createTextNode(data.message));
