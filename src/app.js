@@ -18,6 +18,23 @@ let tmiClient = null;
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(bodyParser.json());
 
+app.get('/event', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  clients.push(res);
+
+  req.on('close', () => {
+    clients = clients.filter(client => client !== res);
+  });
+});
+
+app.get('/', (req, res) => {
+  res.redirect('/home');
+});
+
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/login.html'));
 });
@@ -47,17 +64,54 @@ app.get('/api/followed-streams', async (req, res) => {
   }
 });
 
-app.get('/event', (req, res) => {
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.flushHeaders();
+app.post('/api/sendChatMessage', async (req, res) => {
+  const message = req.body.message;
 
-  clients.push(res);
+  if (!message || !player.currentlyWatching) {
+    res.status(400).send(`${!message ? 'Missing message' : 'Not watching a stream'}`);
+    return;
+  }
 
-  req.on('close', () => {
-    clients = clients.filter(client => client !== res);
-  });
+  try {
+    await tmiClient.say(player.currentlyWatching, message);
+    res.status(200).send('Chat message sent');
+  } catch (error) {
+    console.error('Error sending message:', error);
+    res.status(500).send('Failed to send chat message');
+  }
+});
+
+// Check for active stream activity
+app.post('/streamActivity', (req, res) => {
+  if (player.currentlyWatching && clients.length > 0) {
+    // Send SSE event to latest client
+    clients[clients.length - 1].write(`data: ${JSON.stringify({ event: 'userJoinedActiveStream', streamer: player.currentlyWatching })}\n\n`);
+  }
+
+  res.status(200);
+});
+
+// Middleware: check access token validity and refresh if necessary
+app.use(async (req, res, next) => {
+  const isAccessTokenValid = await twitch.isAccessTokenValid();
+
+  if (!isAccessTokenValid) {
+    try {
+      // Attempt to refresh access token
+      await twitch.refreshAccessToken();
+      return next();
+    } catch (error) {
+      console.error(error.message);
+    }
+
+    if (req.path === '/home') {
+      return res.redirect('/login');
+    } else {
+      return res.status(401).send('Unauthorized');
+    }
+  }
+
+  next();
 });
 
 app.get('/api/watch/:streamer', async (req, res) => {
@@ -117,63 +171,11 @@ function initializeTmiClient() {
   });
 }
 
-app.post('/api/sendChatMessage', async (req, res) => {
-  const message = req.body.message;
-
-  if (!message || !player.currentlyWatching) {
-    res.status(400).send(`${!message ? 'Missing message' : 'Not watching a stream'}`);
-    return;
-  }
-
-  try {
-    await tmiClient.say(player.currentlyWatching, message);
-    res.status(200).send('Chat message sent');
-  } catch (error) {
-    console.error('Error sending message:', error);
-    res.status(500).send('Failed to send chat message');
-  }
-});
-
-// Check for active stream activity
-app.post('/streamActivity', (req, res) => {
-  if (player.currentlyWatching && clients.length > 0) {
-    // Send SSE event to latest client
-    clients[clients.length - 1].write(`data: ${JSON.stringify({ event: 'userJoinedActiveStream', streamer: player.currentlyWatching })}\n\n`);
-  }
-
-  res.status(200);
-})
-
-// Middleware: check access token and get user info
-app.use(async (req, res, next) => {
-  if (!twitch.accessToken) {
-    return res.redirect('/login');
-  }
-
-  const isAccessTokenValid = await twitch.isAccessTokenValid();
-
-  if (!isAccessTokenValid) {
-    try {
-      // Attempt to refresh access token
-      await twitch.refreshAccessToken();
-    } catch (error) {
-      console.error(error.message);
-      return res.redirect('/login');
-    }
-  }
-
+app.get('/home', async (req, res) => {
   const user = await twitch.getUserInfo();
   userInfo.userId = user.userId;
   userInfo.displayName = user.displayName;
 
-  next();
-})
-
-app.get('/', (req, res) => {
-  res.redirect('/home');
-});
-
-app.get('/home', async (req, res) => {
   res.sendFile(path.join(__dirname, '../public/home.html'));
 });
 
