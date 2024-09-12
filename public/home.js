@@ -110,13 +110,13 @@ function appendStreams(followedStreams) {
 
     // Streamer Name
     const name = document.createElement('h3');
-    name.textContent = `${stream.user_name}`;
+    name.textContent = stream.user_name;
     streamCard.appendChild(name);
 
     // Stream Title
     const title = document.createElement('p');
     title.classList.add('stream-title');
-    title.textContent = ` ${stream.title}`;
+    title.textContent = stream.title;
     streamCard.appendChild(title);
 
     // Game Name
