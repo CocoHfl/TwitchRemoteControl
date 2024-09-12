@@ -145,7 +145,8 @@ class TwitchApi {
       }
     });
 
-    return req.json();
+    let resp = await req.json();
+    return resp?.data;
   }
 }
 

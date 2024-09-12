@@ -57,11 +57,22 @@ app.get('/twitchCallback', async (req, res) => {
 app.get('/api/followed-streams', async (req, res) => {
   try {
     const followedStreams = await twitch.getLiveFollowedStreams(userInfo.userId);
-
     res.json(followedStreams);
   } catch (error) {
     res.status(500).send('Internal Server Error');
   }
+
+  // Fetch followed streams every minute
+  setInterval(async () => {
+    try {
+      const followedStreams = await twitch.getLiveFollowedStreams(userInfo.userId);
+      clients.forEach(client => {
+        client.write(`data: ${JSON.stringify({ event: 'followedStreamsUpdate', followedStreams })}\n\n`);
+      });
+    } catch (error) {
+      console.error('Error fetching followed streams:', error);
+    }
+  }, 60000);
 });
 
 app.post('/api/sendChatMessage', async (req, res) => {
