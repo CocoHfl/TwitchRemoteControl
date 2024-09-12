@@ -97,6 +97,13 @@ function appendStreams(followedStreams) {
   const streamEle = document.getElementById('streams');
   streamEle.textContent = '';
 
+  if(followedStreams.length === 0) {
+    const p = document.createElement('p');
+    p.textContent = 'None of your follows are live right now 😴.';
+    streamEle.appendChild(p);
+    return;
+  }
+
   for (const stream of followedStreams) {
     const streamCard = document.createElement('div');
     streamCard.classList.add('stream-card');
