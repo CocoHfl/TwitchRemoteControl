@@ -15,7 +15,7 @@ const twitch = new TwitchApi();
 const player = new StreamPlayer();
 
 const app = express();
-const port = 3002;
+const port = process.env.PORT || 3000;
 
 let clients = [];
 let userInfo = { userId: null, displayName: null };
