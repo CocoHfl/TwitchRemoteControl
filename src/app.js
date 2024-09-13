@@ -1,9 +1,15 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
 const TwitchApi = require('./twitchApi');
 const StreamPlayer = require('./streamPlayer');
 const tmi = require('tmi.js');
+
+if(!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
+  console.error('Please set CLIENT_ID and CLIENT_SECRET environment variables');
+  process.exit(1);
+}
 
 const twitch = new TwitchApi();
 const player = new StreamPlayer();
