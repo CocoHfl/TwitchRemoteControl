@@ -99,6 +99,7 @@ function appendStreams(followedStreams) {
 
   if(followedStreams.length === 0) {
     const p = document.createElement('p');
+    p.style.textAlign = 'center';
     p.textContent = 'None of your follows are live right now 😴.';
     streamEle.appendChild(p);
     return;
