@@ -6,9 +6,16 @@ class TwitchApi {
     this.authUrl = 'https://id.twitch.tv/oauth2';
     this.clientId = process.env.CLIENT_ID;
     this.clientSecret = process.env.CLIENT_SECRET;
+    this.checkTokensFileExists();
     this.tokens = this.loadTokens();
     this.accessToken = this.tokens?.accessToken;
     this.refreshToken = this.tokens?.refreshToken;
+  }
+
+  checkTokensFileExists() {
+    if (!fs.existsSync('tokens.json')) {
+      fs.writeFileSync('tokens.json', '{}', 'utf-8');
+    }
   }
 
   loadTokens() {
