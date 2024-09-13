@@ -43,7 +43,6 @@ p {
 
 .game-name, .stream-title, .viewer-count {
   margin: 10px 0;
-  font-size: 1.125rem;
   color: #f1f1f1;
 }
 
@@ -69,7 +68,6 @@ p {
 }
 
 #currently-watching-text {
-  font-size: 1.125rem;
   font-weight: bold;
   color: #f1f1f1;
   text-align: center;
