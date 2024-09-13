@@ -11,11 +11,11 @@ if(!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
   process.exit(1);
 }
 
-const twitch = new TwitchApi();
-const player = new StreamPlayer();
-
 const app = express();
 const port = process.env.PORT || 3000;
+
+const twitch = new TwitchApi(port);
+const player = new StreamPlayer();
 
 let clients = [];
 let userInfo = { userId: null, displayName: null };

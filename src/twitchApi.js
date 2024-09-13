@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 class TwitchApi {
-  constructor() {
+  constructor(port) {
     this.apiUrl = 'https://api.twitch.tv/helix';
     this.authUrl = 'https://id.twitch.tv/oauth2';
     this.clientId = process.env.CLIENT_ID;
@@ -10,6 +10,7 @@ class TwitchApi {
     this.tokens = this.loadTokens();
     this.accessToken = this.tokens?.accessToken;
     this.refreshToken = this.tokens?.refreshToken;
+    this.port = port;
   }
 
   checkTokensFileExists() {
@@ -50,7 +51,7 @@ class TwitchApi {
     const url = `${this.authUrl}/authorize`;
     const responseType = 'response_type=code';
     const clientId = `client_id=${this.clientId}`;
-    const redirectUri = `redirect_uri=http://localhost:3002/twitchCallback`;
+    const redirectUri = `redirect_uri=http://localhost:${this.port}/twitchCallback`;
     const scopesArray = ['user:read:follows', 'chat:read', 'chat:edit'];
     const scopes = `scope=${scopesArray.map(encodeURIComponent).join('+')}`;
 
@@ -63,7 +64,7 @@ class TwitchApi {
     const clientSecret = `client_secret=${this.clientSecret}`;
     const code = `code=${authorizationCode}`;
     const grantType = 'grant_type=authorization_code';
-    const redirectUri = 'redirect_uri=http://localhost:3002/twitchCallback';
+    const redirectUri = `redirect_uri=http://localhost:${this.port}/twitchCallback`;
 
     const req = await fetch(`${url}?${clientId}&${clientSecret}&${code}&${grantType}&${redirectUri}`, {
       method: 'POST',
