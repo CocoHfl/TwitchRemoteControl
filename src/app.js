@@ -32,7 +32,11 @@ app.get('/event', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.redirect('/home');
+  if(twitch.accessToken) {
+    res.redirect('/home');
+  } else {
+    res.redirect('/login');
+  }
 });
 
 app.get('/login', (req, res) => {
