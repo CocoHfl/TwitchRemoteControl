@@ -6,13 +6,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="styles/global.css" type="text/css">
   <link rel="stylesheet" href="styles/home.css" type="text/css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 
 <body>
   <div id="root">
     <h1>Live Followed Streams</h1>
     <div id="currently-watching">
-      <p id="currently-watching-text">
+      <p id="currently-watching-text"></p>
+      <div class="icon-buttons">
+        <i class="fas fa-pause" onclick="playerAction('togglePause')" title="Pause/unpause"></i>
+        <i class="fas fa-volume-mute" onclick="playerAction('toggleMute')" title="Mute/unmute"></i>
+        <i class="fas fa-xmark" onclick="playerAction('closeStream')" title="Close stream"></i>
+      </div>
       <div id="chat"></div>
       <div id="send-message">
         <input type="text" id="message-input" placeholder='Enter message'>

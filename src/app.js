@@ -6,7 +6,7 @@ const TwitchApi = require('./twitchApi');
 const StreamPlayer = require('./streamPlayer');
 const tmi = require('tmi.js');
 
-if(!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
+if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
   console.error('Please set CLIENT_ID and CLIENT_SECRET environment variables');
   process.exit(1);
 }
@@ -38,7 +38,7 @@ app.get('/event', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  if(twitch.accessToken) {
+  if (twitch.accessToken) {
     res.redirect('/home');
   } else {
     res.redirect('/login');
@@ -102,14 +102,31 @@ app.post('/api/sendChatMessage', async (req, res) => {
   }
 });
 
-// Check for active stream activity
+// Check for active stream when user joins
 app.post('/streamActivity', (req, res) => {
   if (player.currentlyWatching && clients.length > 0) {
     // Send SSE event to latest client
     clients[clients.length - 1].write(`data: ${JSON.stringify({ event: 'userJoinedActiveStream', streamer: player.currentlyWatching })}\n\n`);
   }
 
-  res.status(200);
+  res.status(200).end();
+});
+
+app.post('/api/playerAction', async (req, res) => {
+  const playerAction = req.body.playerAction;
+
+  if (playerAction) {
+    try {
+      await player.handlePlayerAction(playerAction);
+    } catch (error) {
+      console.error('Error:', error);
+      return res.status(500).send('Failed to handle player action');
+    }
+  } else {
+    return res.status(400).send('Missing player action');
+  }
+
+  res.status(200).end();
 });
 
 // Middleware: check access token validity and refresh if necessary

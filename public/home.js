@@ -175,4 +175,19 @@ async function sendChatMessage() {
   sendButton.textContent = sendButtonContent;
 }
 
+//Sends an action to the server to control the stream player.
+async function playerAction(action) {
+  try {
+    await fetch('/api/playerAction', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ playerAction: action }),
+    });
+  } catch (error) {
+    console.error('Error sending player action:', error);
+  }
+}
+
 fetchStreams();
